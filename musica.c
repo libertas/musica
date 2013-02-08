@@ -16,12 +16,11 @@ int on_del()
 
 int on_help()
 {
-	printf("Need help?\n"
-	       "help:Show this list\n"
-	       "?:Show this list\n"
+	printf("Need help?\n\n"
+	       "help ?:Show this list\n"
 	       "add:Add a new song list\n"
-	       "del:Delete a song list\n"
-	       "exit:Get out of here\n" "quit:Get out of here\n");
+	       "del delete:Delete a song list\n"
+	       "exit quit bye:Get out of here\n");
 	return 0;
 }
 
@@ -41,18 +40,25 @@ int main()
 		if (strcmp(order, "add") == 0)
 			on_add();
 
-		if (strcmp(order, "del") == 0)
+		else if (strcmp(order, "del") == 0)
 			on_del();
 
-		if (strcmp(order, "help") == 0 || strcmp(order, "?") == 0)
+		else if (strcmp(order, "help") == 0 || strcmp(order, "?") == 0)
 			on_help();
 
-		if (strcmp(order, "exit") == 0 || strcmp(order, "quit") == 0
-		    || strcmp(order, "bye") == 0)
+		else if (strcmp(order, "exit") == 0
+			 || strcmp(order, "quit") == 0
+			 || strcmp(order, "bye") == 0)
 			goto l_quit;
+		else if (strcmp(order, "") == 0) {
+			printf("\n");
+			goto l_quit;
+		} else
+			printf("%s%s\n", "Command not found:", order);
+
 	}
 
       l_quit:
-	printf("Bye\n");
+	printf("Bye!\n");
 	return 0;
 }
