@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #define INPUT_LENGTH 200
 #define SONGLIST_LENGTH 20
+#define CONFIG_FILE_PATH ".musica_config"
 
 char songlist[SONGLIST_LENGTH][INPUT_LENGTH];
 int songlist_counter = 0;
@@ -48,7 +50,7 @@ inline int executer(char order[INPUT_LENGTH])
 	if (strcmp(order, "add") == 0)
 		on_add();
 
-	else if (strcmp(order, "del")==0 || strcmp(order, "delete") == 0)
+	else if (strcmp(order, "del") == 0 || strcmp(order, "delete") == 0)
 		on_del();
 
 	else if (strcmp(order, "help") == 0 || strcmp(order, "?") == 0)
@@ -62,7 +64,7 @@ inline int executer(char order[INPUT_LENGTH])
 		return 1;
 
 	else if (strcmp(order, "") == 0) {
-		printf("\n");
+		return 1;//printf("\n");
 	} else
 		printf("%s%s\n", "Command not found:", order);
 	return 0;
@@ -70,19 +72,32 @@ inline int executer(char order[INPUT_LENGTH])
 
 int main()
 {
+	system("cd ~");
 
 	printf("Welcome to Musica\n"
 	       "If you don't know how to use it,entry \"help\"\n");
 
 	char order[INPUT_LENGTH];
 
+	//read config
+	FILE *stdin_backup=stdin;
+	stdin = fopen(CONFIG_FILE_PATH, "r");
+	
 	//main loop
+	int executer_returned;
 	while (1) {
-		printf(">");
+		l_loop_start:
+		if(stdin==stdin_backup) printf(">");
 		for (int i = 0; i < INPUT_LENGTH; i++)
 			order[i] = 0;
 		scanf("%s[^\n]", order);
-		if(executer(order)) goto l_quit;
+		executer_returned=executer(order);
+		if (executer_returned&&(stdin==stdin_backup))
+			goto l_quit;
+		else if(executer_returned&&(stdin!=stdin_backup)){
+			stdin=stdin_backup;
+			goto l_loop_start;
+		}
 	}
 
       l_quit:
