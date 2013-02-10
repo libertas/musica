@@ -53,7 +53,8 @@ inline int on_help()
 	       "add :Add a new song list\n"
 	       "del delete :Delete a song list\n"
 	       "showlist show :Show the songlists you have added\n"
-	       "exit quit bye :Get out of here\n");
+	       "exit quit bye :Get out of here\n"
+	       "\nIf you want to keep your own \".musica_config\",please not to add or delete anything from this program.\n");
 	return 0;
 }
 
