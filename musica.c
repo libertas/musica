@@ -81,10 +81,10 @@ int main()
 
 	//read config
 	FILE *stdin_backup=stdin;
-	stdin = fopen(CONFIG_FILE_PATH, "r");
+	int executer_returned;
+	if((stdin = fopen(CONFIG_FILE_PATH, "r") )==0 ) stdin=stdin_backup;
 	
 	//main loop
-	int executer_returned;
 	while (1) {
 		l_loop_start:
 		if(stdin==stdin_backup) printf(">");
