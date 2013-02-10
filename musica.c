@@ -8,10 +8,21 @@
 char songlist[SONGLIST_LENGTH][INPUT_LENGTH];
 int songlist_counter = 0;
 
+inline int save_config()
+{
+	FILE *fp;
+	fp=fopen(CONFIG_FILE_PATH,"w");
+	for (int i = 0;i < SONGLIST_LENGTH && songlist[i][0] != (char)0;i++)
+		fprintf(fp,"%s %s\n","add",songlist[i]);
+	fclose(fp);
+	return 0;
+}
+
 inline int on_add()
 {
 	scanf("%s^[\n]", songlist[songlist_counter]);
 	songlist_counter++;
+	save_config();
 	return 0;
 }
 
@@ -29,6 +40,7 @@ inline int on_del()
 		printf("\"%s\"%s\n", songlist[songlist_counter], " is deleted");
 		for (int i = 0; i < INPUT_LENGTH; i++)
 			songlist[songlist_counter][i] = (char)0;
+		save_config();
 	} else
 		printf("The songlist is empty\n");
 	return 0;
@@ -64,7 +76,7 @@ inline int executer(char order[INPUT_LENGTH])
 		return 1;
 
 	else if (strcmp(order, "") == 0) {
-		return 1;//printf("\n");
+		return 1;	//printf("\n");
 	} else
 		printf("%s%s\n", "Command not found:", order);
 	return 0;
@@ -72,30 +84,30 @@ inline int executer(char order[INPUT_LENGTH])
 
 int main()
 {
-	system("cd ~");
-
 	printf("Welcome to Musica\n"
 	       "If you don't know how to use it,entry \"help\"\n");
 
 	char order[INPUT_LENGTH];
 
 	//read config
-	FILE *stdin_backup=stdin;
+	FILE *stdin_backup = stdin;
 	int executer_returned;
-	if((stdin = fopen(CONFIG_FILE_PATH, "r") )==0 ) stdin=stdin_backup;
-	
+	if ((stdin = fopen(CONFIG_FILE_PATH, "r")) == 0)
+		stdin = stdin_backup;
+
 	//main loop
 	while (1) {
-		l_loop_start:
-		if(stdin==stdin_backup) printf(">");
+	      l_loop_start:
+		if (stdin == stdin_backup)
+			printf(">");
 		for (int i = 0; i < INPUT_LENGTH; i++)
 			order[i] = 0;
 		scanf("%s[^\n]", order);
-		executer_returned=executer(order);
-		if (executer_returned&&(stdin==stdin_backup))
+		executer_returned = executer(order);
+		if (executer_returned && (stdin == stdin_backup))
 			goto l_quit;
-		else if(executer_returned&&(stdin!=stdin_backup)){
-			stdin=stdin_backup;
+		else if (executer_returned && (stdin != stdin_backup)) {
+			stdin = stdin_backup;
 			goto l_loop_start;
 		}
 	}
