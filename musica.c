@@ -114,7 +114,7 @@ int main()
 		if (executer_returned && (stdin == stdin_backup))
 			goto l_quit;
 		else if (executer_returned && (stdin != stdin_backup)) {
-			
+			fclose(stdin);
 			stdin = stdin_backup;
 			goto l_loop_start;
 		}
