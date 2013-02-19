@@ -86,21 +86,22 @@ inline int executer(char order[INPUT_LENGTH])
 
 int main()
 {
+	//preparing
+	char order[INPUT_LENGTH];
+	int executer_returned;
+	printf("Welcome to Musica\n"
+	       "If you don't know how to use it,entry \"help\"\n");
+	
 	//change directory
 	char *home_path;
 	home_path = getenv("HOME");
 	chdir(home_path);
-
-	char order[INPUT_LENGTH];
-
+	
 	//read config
 	FILE *stdin_backup = stdin;
-	int executer_returned;
 	if ((stdin = fopen(CONFIG_FILE_PATH, "r")) == 0)
 		stdin = stdin_backup;
-
-	printf("Welcome to Musica\n"
-	       "If you don't know how to use it,entry \"help\"\n");
+	
 	//main loop
 	while (1) {
 	      l_loop_start:
@@ -113,6 +114,7 @@ int main()
 		if (executer_returned && (stdin == stdin_backup))
 			goto l_quit;
 		else if (executer_returned && (stdin != stdin_backup)) {
+			
 			stdin = stdin_backup;
 			goto l_loop_start;
 		}
