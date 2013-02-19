@@ -11,6 +11,5 @@ musica:$(objects)
 clean:
 	-rm $(objects)
 	-rm musica
-	-rm .musica_config
 indent:
 	indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -o musica.c musica.c

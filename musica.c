@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #define INPUT_LENGTH 200
 #define SONGLIST_LENGTH 20
 #define CONFIG_FILE_PATH ".musica_config"
@@ -11,9 +12,9 @@ int songlist_counter = 0;
 inline int save_config()
 {
 	FILE *fp;
-	fp=fopen(CONFIG_FILE_PATH,"w");
-	for (int i = 0;i < SONGLIST_LENGTH && songlist[i][0] != (char)0;i++)
-		fprintf(fp,"%s %s\n","add",songlist[i]);
+	fp = fopen(CONFIG_FILE_PATH, "w");
+	for (int i = 0; i < SONGLIST_LENGTH && songlist[i][0] != (char)0; i++)
+		fprintf(fp, "%s %s\n", "add", songlist[i]);
 	fclose(fp);
 	return 0;
 }
@@ -85,8 +86,10 @@ inline int executer(char order[INPUT_LENGTH])
 
 int main()
 {
-	printf("Welcome to Musica\n"
-	       "If you don't know how to use it,entry \"help\"\n");
+	//change directory
+	char *home_path;
+	home_path = getenv("HOME");
+	chdir(home_path);
 
 	char order[INPUT_LENGTH];
 
@@ -96,6 +99,8 @@ int main()
 	if ((stdin = fopen(CONFIG_FILE_PATH, "r")) == 0)
 		stdin = stdin_backup;
 
+	printf("Welcome to Musica\n"
+	       "If you don't know how to use it,entry \"help\"\n");
 	//main loop
 	while (1) {
 	      l_loop_start:
