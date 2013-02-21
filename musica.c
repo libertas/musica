@@ -6,7 +6,7 @@
 #define SONGLIST_LENGTH 20
 #define CONFIG_FILE_PATH ".musica_config"
 #define MPLAYER "nohup mplayer -slave -input file=/tmp/musica_fifofile "
-#define MPLAYER_ENDING "/* 2>/dev/null &"
+#define MPLAYER_ENDING " 2>/dev/null &"
 
 char songlist[SONGLIST_LENGTH][INPUT_LENGTH];
 int songlist_counter = 0;
@@ -71,42 +71,48 @@ inline int write2fifo(char msg[])
 
 inline int on_play()
 {
-	char command[strlen(MPLAYER) + INPUT_LENGTH + strlen(MPLAYER_ENDING)];
+	char command[strlen(MPLAYER) + INPUT_LENGTH * SONGLIST_LENGTH +
+		     strlen(MPLAYER_ENDING)];
 	char control;
 
 	strcpy(command, MPLAYER);
-	strcat(command, songlist[0]);
+	for (int i = 0; i < SONGLIST_LENGTH && songlist[i][0] != (char)0; i++) {
+		strcat(command, songlist[i]);
+		strcat(command, "/* ");
+	}
 	strcat(command, MPLAYER_ENDING);
 
 	system("mkfifo /tmp/musica_fifofile");
-	system(command);
+	if (!system(command)) {
 
-	int n = 1;
-	printf("Playing....\n"
-	       "The following commands are available:\n"
-	       "q:stop\n" "p:pause\n" "n:next\n" "m:mute\n");
-	write2fifo("volume 100 q");
-	do {
-		control = getchar();
-		switch (control) {
-		case 'q':
-			write2fifo("quit");
-			system("rm /tmp/musica_fifofile");
-			n = 0;
-			break;
-		case 'p' || ' ':
-			write2fifo("p");
-			break;
-		case 'n':
-			write2fifo("seek 9999");
-			break;
-		case 'm':
-			write2fifo("m");
-		}
+		int n = 1;
+		printf("Playing....\n"
+		       "The following commands are available:\n"
+		       "q:stop\n" "p:pause\n" "n:next\n" "m:mute\n");
+		write2fifo("volume 100 q");
+		do {
+			control = getchar();
+			switch (control) {
+			case 'q':
+				write2fifo("quit");
+				system("rm /tmp/musica_fifofile");
+				n = 0;
+				break;
+			case 'p':
+				write2fifo("pause");
+				break;
+			case 'n':
+				write2fifo("seek 9999");
+				break;
+			case 'm':
+				write2fifo("m");
+				break;
+			}
 
-	} while (n);
-
-	return 0;
+		} while (n);
+		return 0;
+	}
+	return 1;
 }
 
 inline int executer(char order[INPUT_LENGTH])
@@ -123,8 +129,11 @@ inline int executer(char order[INPUT_LENGTH])
 	else if (strcmp(order, "showlist") == 0 || strcmp(order, "show") == 0)
 		on_showlist();
 
-	else if (strcmp(order, "play") == 0)
-		on_play();
+	else if (strcmp(order, "play") == 0) {
+		if (on_play())
+			printf
+			    ("The songlist cannot be played.Please check the song list\n");
+	}
 
 	else if (strcmp(order, "exit") == 0
 		 || strcmp(order, "quit") == 0 || strcmp(order, "bye") == 0
