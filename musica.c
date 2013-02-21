@@ -6,6 +6,7 @@
 #define SONGLIST_LENGTH 20
 #define CONFIG_FILE_PATH ".musica_config"
 #define MPLAYER "nohup mplayer -slave -input file=/tmp/musica_fifofile "
+#define MPLAYER_ENDING "/* 2>/dev/null &"
 
 char songlist[SONGLIST_LENGTH][INPUT_LENGTH];
 int songlist_counter = 0;
@@ -70,12 +71,12 @@ inline int write2fifo(char msg[])
 
 inline int on_play()
 {
-	char command[strlen(MPLAYER) + INPUT_LENGTH + 4];
+	char command[strlen(MPLAYER) + INPUT_LENGTH + strlen(MPLAYER_ENDING)];
 	char control;
 
 	strcpy(command, MPLAYER);
 	strcat(command, songlist[0]);
-	strcat(command, "/* &");
+	strcat(command, MPLAYER_ENDING);
 
 	system("mkfifo /tmp/musica_fifofile");
 	system(command);
