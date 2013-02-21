@@ -84,6 +84,12 @@ inline int executer(char order[INPUT_LENGTH])
 	return 0;
 }
 
+int playmusic(int order)
+{
+	
+	return 0;
+}
+
 int main()
 {
 	//preparing
