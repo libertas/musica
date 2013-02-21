@@ -5,6 +5,7 @@
 #define INPUT_LENGTH 200
 #define SONGLIST_LENGTH 20
 #define CONFIG_FILE_PATH ".musica_config"
+#define MPLAYER "nohup mplayer -slave -input file=/tmp/musica_fifofile "
 
 char songlist[SONGLIST_LENGTH][INPUT_LENGTH];
 int songlist_counter = 0;
@@ -54,8 +55,44 @@ inline int on_help()
 	       "add :Add a new song list\n"
 	       "del delete :Delete a song list\n"
 	       "showlist show :Show the songlists you have added\n"
-	       "exit quit bye :Get out of here\n"
+	       "exit quit bye q :Get out of here\n"
 	       "\nIf you want to keep your own \".musica_config\",please not to add or delete anything from this program.\n");
+	return 0;
+}
+
+inline int write2fifo(char msg[])
+{
+	FILE *ffifo = fopen("/tmp/musica_fifofile", "w");
+	fprintf(ffifo, "%s\n", msg);
+	fclose(ffifo);
+	return 0;
+}
+
+inline int on_play()
+{
+	char command[strlen(MPLAYER) + INPUT_LENGTH + 4];
+	char control;
+
+	strcpy(command, MPLAYER);
+	strcat(command, songlist[0]);
+	strcat(command, "/* &");
+
+	system("mkfifo /tmp/musica_fifofile");
+	system(command);
+
+	int n = 1;
+	do {
+		control = getchar();
+		if (control == 'q') {
+			write2fifo("q");
+			system("rm /tmp/musica_fifofile");
+			n = 0;
+		}
+		else if (control == 'n'){
+			write2fifo("\n");
+		}
+	} while (n);
+
 	return 0;
 }
 
@@ -73,20 +110,18 @@ inline int executer(char order[INPUT_LENGTH])
 	else if (strcmp(order, "showlist") == 0 || strcmp(order, "show") == 0)
 		on_showlist();
 
+	else if (strcmp(order, "play") == 0)
+		on_play();
+
 	else if (strcmp(order, "exit") == 0
-		 || strcmp(order, "quit") == 0 || strcmp(order, "bye") == 0)
+		 || strcmp(order, "quit") == 0 || strcmp(order, "bye") == 0
+		 || strcmp(order, "q") == 0)
 		return 1;
 
 	else if (strcmp(order, "") == 0) {
 		return 1;	//printf("\n");
 	} else
 		printf("%s%s\n", "Command not found:", order);
-	return 0;
-}
-
-int playmusic(int order)
-{
-	
 	return 0;
 }
 
@@ -97,17 +132,17 @@ int main()
 	int executer_returned;
 	printf("Welcome to Musica\n"
 	       "If you don't know how to use it,entry \"help\"\n");
-	
+
 	//change directory
 	char *home_path;
 	home_path = getenv("HOME");
 	chdir(home_path);
-	
+
 	//read config
 	FILE *stdin_backup = stdin;
 	if ((stdin = fopen(CONFIG_FILE_PATH, "r")) == 0)
 		stdin = stdin_backup;
-	
+
 	//main loop
 	while (1) {
 	      l_loop_start:
