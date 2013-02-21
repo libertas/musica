@@ -63,9 +63,9 @@ inline int on_help()
 
 inline int write2fifo(char msg[])
 {
-	FILE *ffifo = fopen("/tmp/musica_fifofile", "w");
-	fprintf(ffifo, "%s\n", msg);
-	fclose(ffifo);
+	FILE *fifo = fopen("/tmp/musica_fifofile", "w");
+	fprintf(fifo, "%s\n", msg);
+	fclose(fifo);
 	return 0;
 }
 
@@ -82,16 +82,28 @@ inline int on_play()
 	system(command);
 
 	int n = 1;
+	printf("Playing....\n"
+	       "The following commands are available:\n"
+	       "q:stop\n" "p:pause\n" "n:next\n" "m:mute\n");
+	write2fifo("volume 100 q");
 	do {
 		control = getchar();
-		if (control == 'q') {
-			write2fifo("q");
+		switch (control) {
+		case 'q':
+			write2fifo("quit");
 			system("rm /tmp/musica_fifofile");
 			n = 0;
+			break;
+		case 'p' || ' ':
+			write2fifo("p");
+			break;
+		case 'n':
+			write2fifo("seek 9999");
+			break;
+		case 'm':
+			write2fifo("m");
 		}
-		else if (control == 'n'){
-			write2fifo("\n");
-		}
+
 	} while (n);
 
 	return 0;
