@@ -182,7 +182,6 @@ int main()
 
 		//main loop
 		while (1) {
-		      l_loop_start:
 			if (stdin == stdin_backup)
 				printf(">");
 			for (int i = 0; i < INPUT_LENGTH; i++)
@@ -191,11 +190,10 @@ int main()
 			executer_returned = executer(order);
 			if (executer_returned && (stdin == stdin_backup)) {
 				system("rm /tmp/musica.lck");
-				goto l_quit;
+				break;
 			} else if (executer_returned && (stdin != stdin_backup)) {
 				fclose(stdin);
 				stdin = stdin_backup;
-				goto l_loop_start;
 			}
 		}
 	} else {
@@ -208,7 +206,6 @@ int main()
 			goto l_checking;
 		}
 	}
-      l_quit:
 	printf("Bye!\n");
 	return 0;
 }
