@@ -149,6 +149,12 @@ inline int executer(char order[INPUT_LENGTH])
 
 int main()
 {
+	//checking lock file
+	FILE* lock;
+	if((lock=fopen("/tmp/musica.lck","r"))==0){
+		l_checking:
+	system("echo \"1\">/tmp/musica.lck");
+	
 	//preparing
 	char order[INPUT_LENGTH];
 	int executer_returned;
@@ -174,15 +180,27 @@ int main()
 			order[i] = 0;
 		scanf("%s[^\n]", order);
 		executer_returned = executer(order);
-		if (executer_returned && (stdin == stdin_backup))
+		if (executer_returned && (stdin == stdin_backup)){
+			system("rm /tmp/musica.lck");
 			goto l_quit;
+		}
 		else if (executer_returned && (stdin != stdin_backup)) {
 			fclose(stdin);
 			stdin = stdin_backup;
 			goto l_loop_start;
 		}
 	}
-
+}
+else
+{
+	fclose(lock);
+	printf("Another musica is running.If not,please delete /tmp/musica.lck\n"
+	"Do you want to delete the file and run musica now?(y/N)");
+	if(getchar()=='y'||getchar()=='Y')
+	{system("rm /tmp/musica.lck");
+	goto l_checking;
+}
+}
       l_quit:
 	printf("Bye!\n");
 	return 0;
