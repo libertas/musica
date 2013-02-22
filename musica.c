@@ -54,6 +54,7 @@ inline int on_help()
 {
 	printf("Need help?\n\n"
 	       "help ? :Show this list\n"
+	       "play:Play the songs in the song list\n"
 	       "add :Add a new song list\n"
 	       "del delete :Delete a song list\n"
 	       "showlist show :Show the songlists you have added\n"
