@@ -5,8 +5,9 @@
 #define INPUT_LENGTH 200
 #define SONGLIST_LENGTH 20
 #define CONFIG_FILE_PATH ".musica_config"
-#define MPLAYER "nohup mplayer -slave -input file=/tmp/musica_fifofile "
-#define MPLAYER_ENDING " 2>/dev/null &"
+#define MPLAYER "mplayer -slave -input file=/tmp/musica_fifofile "
+#define MPLAYER_ENDING " &"
+#define SLEEP_TIME 3
 
 char songlist[SONGLIST_LENGTH][INPUT_LENGTH];
 int songlist_counter = 0;
@@ -73,7 +74,6 @@ inline int on_play()
 {
 	char command[strlen(MPLAYER) + INPUT_LENGTH * SONGLIST_LENGTH +
 		     strlen(MPLAYER_ENDING)];
-	char control;
 
 	strcpy(command, MPLAYER);
 	for (int i = 0; i < SONGLIST_LENGTH && songlist[i][0] != (char)0; i++) {
@@ -83,12 +83,12 @@ inline int on_play()
 	strcat(command, MPLAYER_ENDING);
 
 	system("mkfifo /tmp/musica_fifofile");
-	if (!system(command)) {
 
-		int n = 1;
-		printf("Playing....\n"
-		       "The following commands are available:\n"
-		       "q:stop\n" "p:pause\n" "n:next\n" "m:mute\n");
+	int n = 1;
+	char control;
+	printf("If you want to see the key bindings,please inpu 's'\n");
+	sleep(SLEEP_TIME);
+	if (!system(command)) {
 		write2fifo("volume 100 q");
 		do {
 			control = getchar();
@@ -98,21 +98,29 @@ inline int on_play()
 				system("rm /tmp/musica_fifofile");
 				n = 0;
 				break;
-			case 'p':
-				write2fifo("pause");
-				break;
 			case 'n':
 				write2fifo("seek 9999");
 				break;
 			case 'm':
 				write2fifo("m");
 				break;
-			}
+			case 'p':
+				write2fifo("pause");
+			case 's':
+				printf("Playing....\n"
+				       "The following commands are available:\n"
+				       "q:stop\n" "p:pause\n" "n:next\n"
+				       "m:mute\n" "s:show this menu\n");
+				break;
 
+			}
 		} while (n);
 		return 0;
+	} else {
+		write2fifo("quit");
+		system("rm /tmp/musica_fifofile");
+		return 1;
 	}
-	return 1;
 }
 
 inline int executer(char order[INPUT_LENGTH])
@@ -150,57 +158,55 @@ inline int executer(char order[INPUT_LENGTH])
 int main()
 {
 	//checking lock file
-	FILE* lock;
-	if((lock=fopen("/tmp/musica.lck","r"))==0){
-		l_checking:
-	system("echo \"1\">/tmp/musica.lck");
-	
-	//preparing
-	char order[INPUT_LENGTH];
-	int executer_returned;
-	printf("Welcome to Musica\n"
-	       "If you don't know how to use it,entry \"help\"\n");
+	FILE *lock;
+	if ((lock = fopen("/tmp/musica.lck", "r")) == 0) {
+	      l_checking:
+		system("echo \"1\">/tmp/musica.lck");
 
-	//change directory
-	char *home_path;
-	home_path = getenv("HOME");
-	chdir(home_path);
+		//preparing
+		char order[INPUT_LENGTH];
+		int executer_returned;
+		printf("Welcome to Musica\n"
+		       "If you don't know how to use it,entry \"help\"\n");
 
-	//read config
-	FILE *stdin_backup = stdin;
-	if ((stdin = fopen(CONFIG_FILE_PATH, "r")) == 0)
-		stdin = stdin_backup;
+		//change directory
+		char *home_path;
+		home_path = getenv("HOME");
+		chdir(home_path);
 
-	//main loop
-	while (1) {
-	      l_loop_start:
-		if (stdin == stdin_backup)
-			printf(">");
-		for (int i = 0; i < INPUT_LENGTH; i++)
-			order[i] = 0;
-		scanf("%s[^\n]", order);
-		executer_returned = executer(order);
-		if (executer_returned && (stdin == stdin_backup)){
-			system("rm /tmp/musica.lck");
-			goto l_quit;
-		}
-		else if (executer_returned && (stdin != stdin_backup)) {
-			fclose(stdin);
+		//read config
+		FILE *stdin_backup = stdin;
+		if ((stdin = fopen(CONFIG_FILE_PATH, "r")) == 0)
 			stdin = stdin_backup;
-			goto l_loop_start;
+
+		//main loop
+		while (1) {
+		      l_loop_start:
+			if (stdin == stdin_backup)
+				printf(">");
+			for (int i = 0; i < INPUT_LENGTH; i++)
+				order[i] = 0;
+			scanf("%s[^\n]", order);
+			executer_returned = executer(order);
+			if (executer_returned && (stdin == stdin_backup)) {
+				system("rm /tmp/musica.lck");
+				goto l_quit;
+			} else if (executer_returned && (stdin != stdin_backup)) {
+				fclose(stdin);
+				stdin = stdin_backup;
+				goto l_loop_start;
+			}
+		}
+	} else {
+		fclose(lock);
+		printf
+		    ("Another musica is running.If not,please delete /tmp/musica.lck\n"
+		     "Do you want to delete the file and run musica now?(y/N)");
+		if (getchar() == 'y' || getchar() == 'Y') {
+			system("rm /tmp/musica.lck");
+			goto l_checking;
 		}
 	}
-}
-else
-{
-	fclose(lock);
-	printf("Another musica is running.If not,please delete /tmp/musica.lck\n"
-	"Do you want to delete the file and run musica now?(y/N)");
-	if(getchar()=='y'||getchar()=='Y')
-	{system("rm /tmp/musica.lck");
-	goto l_checking;
-}
-}
       l_quit:
 	printf("Bye!\n");
 	return 0;
