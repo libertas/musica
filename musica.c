@@ -7,7 +7,7 @@
 #define CONFIG_FILE_PATH ".musica_config"
 #define MPLAYER "mplayer -slave -input file=/tmp/musica_fifofile "
 #define MPLAYER_ENDING " &"
-#define SLEEP_TIME 3
+#define SLEEP_TIME 1
 
 char songlist[SONGLIST_LENGTH][INPUT_LENGTH];
 int songlist_counter = 0;
@@ -73,54 +73,70 @@ inline int write2fifo(char msg[])
 
 inline int on_play()
 {
+	inline int on_play_quit() {
+		write2fifo("quit");
+		system("rm /tmp/musica_fifofile");
+		sleep(SLEEP_TIME);
+		return 0;
+	}
+
 	char command[strlen(MPLAYER) + INPUT_LENGTH * SONGLIST_LENGTH +
 		     strlen(MPLAYER_ENDING)];
 
+	int i = -1;
+      l_nextlist:
 	strcpy(command, MPLAYER);
-	for (int i = 0; i < SONGLIST_LENGTH && songlist[i][0] != (char)0; i++) {
+	i++;
+	if (songlist[i][0] != (char)0) {
 		strcat(command, songlist[i]);
 		strcat(command, "/* ");
-	}
-	strcat(command, MPLAYER_ENDING);
+		strcat(command, MPLAYER_ENDING);
 
-	system("mkfifo /tmp/musica_fifofile");
+		system("mkfifo /tmp/musica_fifofile");
 
-	int n = 1;
-	char control;
-	printf("If you want to see the key bindings,please inpu 's'\n");
-	sleep(SLEEP_TIME);
-	if (!system(command)) {
-		write2fifo("volume 100 q");
-		do {
-			control = getchar();
-			switch (control) {
-			case 'q':
-				write2fifo("quit");
-				system("rm /tmp/musica_fifofile");
-				n = 0;
-				break;
-			case 'n':
-				write2fifo("seek 9999");
-				break;
-			case 'm':
-				write2fifo("m");
-				break;
-			case 'p':
-				write2fifo("pause");
-			case 's':
-				printf("Playing....\n"
-				       "The following commands are available:\n"
-				       "q:stop\n" "p:pause\n" "n:next\n"
-				       "m:mute\n" "s:show this menu\n");
-				break;
-
-			}
-		} while (n);
-		return 0;
+		int n = 1;
+		char control;
+		printf
+		    ("\033[31mIf you want to see the key bindings,please inpu 's'\n\033[0m");
+		sleep(SLEEP_TIME);
+		if (!system(command)) {
+			write2fifo("volume 100 q");
+			do {
+				control = getchar();
+				switch (control) {
+				case 'q':
+					on_play_quit();
+					n = 0;
+					break;
+				case 'n':
+					write2fifo("seek 9999");
+					break;
+				case 'm':
+					write2fifo("m");
+					break;
+				case 'p':
+					write2fifo("pause");
+				case 's':
+					printf("Playing....\n"
+					       "The following commands are available:\n"
+					       "q:stop\n" "p:pause\n" "n:next\n"
+					       "m:mute\n" "s:show this menu\n"
+					       "j:jump to next list\n");
+					break;
+				case 'j':
+					on_play_quit();
+					goto l_nextlist;
+				}
+			} while (n);
+			return 0;
+		} else {
+			on_play_quit();
+			return 1;
+		}
 	} else {
-		write2fifo("quit");
-		system("rm /tmp/musica_fifofile");
-		return 1;
+		printf("All the things are finished\n");
+		on_play_quit();
+		return 0;
 	}
 }
 
