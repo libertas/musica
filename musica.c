@@ -71,15 +71,16 @@ inline int write2fifo(char msg[])
 	return 0;
 }
 
+inline int on_play_quit()
+{
+	write2fifo("quit");
+	system("rm /tmp/musica_fifofile");
+	sleep(SLEEP_TIME);
+	return 0;
+}
+
 inline int on_play()
 {
-	inline int on_play_quit() {
-		write2fifo("quit");
-		system("rm /tmp/musica_fifofile");
-		sleep(SLEEP_TIME);
-		return 0;
-	}
-
 	char command[strlen(MPLAYER) + INPUT_LENGTH * SONGLIST_LENGTH +
 		     strlen(MPLAYER_ENDING)];
 
