@@ -1,6 +1,7 @@
 CC=cc
 CFLAGS = -O2 -std=c99 -Wall
 objects = musica.o
+destination= /usr/local/bin/musica
 
 musica:$(objects)
 	$(CC) $(CFLAGS)   -o musica $(objects)
@@ -14,4 +15,7 @@ indent:
 	indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -o musica.c musica.c
 
 install:
-	cp musica /usr/local/bin/musica
+	cp musica $(destination)
+
+uninstall:
+	rm $(destination)
