@@ -22,10 +22,16 @@ inline int save_config()
 	return 0;
 }
 
-inline int on_add()
+inline int on_import()
 {
 	scanf("%s^[\n]", songlist[songlist_counter]);
 	songlist_counter++;
+	return 0;
+}
+
+inline int on_add()
+{
+	on_import();
 	save_config();
 	return 0;
 }
@@ -55,7 +61,8 @@ inline int on_help()
 	printf("Need help?\n\n"
 	       "help ? :Show this list\n"
 	       "play:Play the songs in the song list\n"
-	       "add :Add a new song list\n"
+	       "add :Add a new song list and save it into the config file\n"
+	       "import :Add a new song list without saving it\n"
 	       "del delete :Delete a song list\n"
 	       "showlist show :Show the songlists you have added\n"
 	       "exit quit bye q :Get out of here\n"
@@ -145,6 +152,9 @@ int executer(char order[INPUT_LENGTH])
 {
 	if (strcmp(order, "add") == 0)
 		on_add();
+
+	else if (strcmp(order, "import") == 0)
+		on_import();
 
 	else if (strcmp(order, "del") == 0 || strcmp(order, "delete") == 0)
 		on_del();
