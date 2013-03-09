@@ -71,7 +71,7 @@ inline int write2fifo(char msg[])
 	return 0;
 }
 
-inline int on_play_quit()
+int on_play_quit()
 {
 	write2fifo("quit");
 	system("rm /tmp/musica_fifofile");
@@ -79,7 +79,7 @@ inline int on_play_quit()
 	return 0;
 }
 
-inline int on_play()
+int on_play()
 {
 	char command[strlen(MPLAYER) + INPUT_LENGTH * SONGLIST_LENGTH +
 		     strlen(MPLAYER_ENDING)];
@@ -141,7 +141,7 @@ inline int on_play()
 	}
 }
 
-inline int executer(char order[INPUT_LENGTH])
+int executer(char order[INPUT_LENGTH])
 {
 	if (strcmp(order, "add") == 0)
 		on_add();
