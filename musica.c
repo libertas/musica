@@ -6,12 +6,13 @@
 #define INPUT_LENGTH 200
 #define SONGLIST_LENGTH 20
 #define CONFIG_FILE_PATH ".musica_config"
-#define MPLAYER "mplayer -slave -input file=/tmp/musica_fifofile "
-#define MPLAYER_ENDING " &"
+#define MPLAYER "mplayer -slave -input file=/tmp/musica_fifofile"
+#define MPLAYER_ENDING "&"
 #define SLEEP_TIME 1
 
 char songlist[SONGLIST_LENGTH][INPUT_LENGTH];
 int songlist_counter = 0;
+char play_order;
 
 int on_save_config()
 {
@@ -86,6 +87,7 @@ int on_help()
 	       "del delete :Delete a song list\n"
 	       "showlist show :Show the songlists you have added\n"
 	       "save :Save the options into the config file\n"
+	       "order :set play order(will not save unless run 'save' after it),'d' stands for default,'r' stands for ramdom\n"
 	       "exit quit bye q :Get out of here\n"
 	       "\nIf you want to keep your own \".musica_config\",please not to add or delete anything from this program.\n");
 	return 0;
@@ -133,6 +135,7 @@ int on_play()
 		closedir(songdir);
 	}
 	fclose(playlist_file);
+	if (play_order=='r') system("sort <.musica_playlist >.musica_playlist.backup -R;mv .musica_playlist.backup .musica_playlist");
 
 	//playing
 	sprintf(command,"%s %s %s",MPLAYER,"-playlist .musica_playlist",MPLAYER_ENDING);
@@ -181,6 +184,15 @@ int on_play()
 
 }
 
+int on_order()
+{
+	char order_inputed;
+	getchar();
+	order_inputed=getchar();
+	if(order_inputed=='r' || order_inputed=='d') play_order=order_inputed;
+	return 0;
+}
+
 int executer(char order[INPUT_LENGTH])
 {
 	if (strcmp(order, "add") == 0)
@@ -188,6 +200,9 @@ int executer(char order[INPUT_LENGTH])
 
 	else if (strcmp(order, "import") == 0)
 		on_import();
+
+	else if (strcmp(order, "order") == 0)
+		on_order();
 
 	else if (strcmp(order, "del") == 0 || strcmp(order, "delete") == 0)
 		on_del();
