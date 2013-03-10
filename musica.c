@@ -34,7 +34,12 @@ int on_import()
 		//if the last char is not '/' then it will be added
 		char*ptr;
 		for(ptr=name_newdir;*ptr!=0;ptr++);
-		if(*(ptr-1)!='/') *ptr='/';
+		if(*(ptr-1)!='/')
+		{
+			*ptr='/';
+			*(ptr+1)=0;
+		}
+		printf("%s is imported\n",name_newdir);
 		
 		strcpy(songlist[songlist_counter], name_newdir);
 		songlist_counter++;
@@ -80,6 +85,7 @@ int on_help()
 	       "import :Add a new song list without saving it\n"
 	       "del delete :Delete a song list\n"
 	       "showlist show :Show the songlists you have added\n"
+	       "save :Save the options into the config file\n"
 	       "exit quit bye q :Get out of here\n"
 	       "\nIf you want to keep your own \".musica_config\",please not to add or delete anything from this program.\n");
 	return 0;
@@ -197,6 +203,9 @@ int executer(char order[INPUT_LENGTH])
 			printf
 			    ("The songlist cannot be played.Please check the song list\n");
 	}
+
+	else if (strcmp(order, "save") == 0)
+		on_save_config();
 
 	else if (strcmp(order, "exit") == 0
 		 || strcmp(order, "quit") == 0 || strcmp(order, "bye") == 0
