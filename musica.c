@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <dirent.h>
 #define INPUT_LENGTH 200
 #define SONGLIST_LENGTH 20
 #define CONFIG_FILE_PATH ".musica_config"
@@ -17,16 +18,25 @@ inline int save_config()
 	FILE *fp;
 	fp = fopen(CONFIG_FILE_PATH, "w");
 	for (int i = 0; i < SONGLIST_LENGTH && songlist[i][0] != (char)0; i++)
-		fprintf(fp, "%s %s\n", "add", songlist[i]);
+		fprintf(fp, "%s %s\n", "import", songlist[i]);
 	fclose(fp);
 	return 0;
 }
 
 inline int on_import()
 {
-	scanf("%s^[\n]", songlist[songlist_counter]);
-	songlist_counter++;
-	return 0;
+	char name_newdir[INPUT_LENGTH];
+	DIR *p_newdir;
+	scanf("%s^[\n]", name_newdir);
+	if ((p_newdir = opendir(name_newdir)) == 0)
+		printf("%s:the directory doesn't exist\n", name_newdir);
+	else {
+		strcpy(songlist[songlist_counter],name_newdir);
+		songlist_counter++;
+		closedir(p_newdir);
+		return 0;
+	}
+	return 1;
 }
 
 inline int on_add()
