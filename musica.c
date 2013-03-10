@@ -13,7 +13,7 @@
 char songlist[SONGLIST_LENGTH][INPUT_LENGTH];
 int songlist_counter = 0;
 
-inline int save_config()
+int save_config()
 {
 	FILE *fp;
 	fp = fopen(CONFIG_FILE_PATH, "w");
@@ -23,7 +23,7 @@ inline int save_config()
 	return 0;
 }
 
-inline int on_import()
+int on_import()
 {
 	char name_newdir[INPUT_LENGTH];
 	DIR *p_newdir;
@@ -31,7 +31,7 @@ inline int on_import()
 	if ((p_newdir = opendir(name_newdir)) == 0)
 		printf("%s:the directory doesn't exist\n", name_newdir);
 	else {
-		strcpy(songlist[songlist_counter],name_newdir);
+		strcpy(songlist[songlist_counter], name_newdir);
 		songlist_counter++;
 		closedir(p_newdir);
 		return 0;
@@ -39,21 +39,21 @@ inline int on_import()
 	return 1;
 }
 
-inline int on_add()
+int on_add()
 {
 	on_import();
 	save_config();
 	return 0;
 }
 
-inline int on_showlist()
+int on_showlist()
 {
 	for (int i = 0; i < SONGLIST_LENGTH && songlist[i][0] != (char)0; i++)
 		printf("%s\n", songlist[i]);
 	return 0;
 }
 
-inline int on_del()
+int on_del()
 {
 	if (songlist_counter != 0) {
 		songlist_counter--;
@@ -66,7 +66,7 @@ inline int on_del()
 	return 0;
 }
 
-inline int on_help()
+int on_help()
 {
 	printf("Need help?\n\n"
 	       "help ? :Show this list\n"
@@ -80,7 +80,7 @@ inline int on_help()
 	return 0;
 }
 
-inline int write2fifo(char msg[])
+int write2fifo(char msg[])
 {
 	FILE *fifo = fopen("/tmp/musica_fifofile", "w");
 	fprintf(fifo, "%s\n", msg);
@@ -101,61 +101,75 @@ int on_play()
 	char command[strlen(MPLAYER) + INPUT_LENGTH * SONGLIST_LENGTH +
 		     strlen(MPLAYER_ENDING)];
 
-	int i = -1;
-      l_nextlist:
-	strcpy(command, MPLAYER);
-	i++;
-	if (songlist[i][0] != (char)0) {
-		strcat(command, songlist[i]);
-		strcat(command, "/* ");
-		strcat(command, MPLAYER_ENDING);
+	//checking if the songlist is empty
+	if (songlist[0][0] == (char)0)
+		return 1;
 
-		system("mkfifo /tmp/musica_fifofile");
+	//preparing playlist
+	DIR *songdir;
+	struct dirent *entry;
+	FILE *playlist_file = fopen(".musica_playlist", "w");
+	for (int i = 0; i < songlist_counter; i++) {
+		songdir = opendir(songlist[i]);
 
-		int n = 1;
-		char control;
-		printf
-		    ("\033[31mIf you want to see the key bindings,please inpu 's'\n\033[0m");
-		sleep(SLEEP_TIME);
-		if (!system(command)) {
-			write2fifo("volume 100 q");
-			do {
-				control = getchar();
-				switch (control) {
-				case 'q':
-					on_play_quit();
-					n = 0;
-					break;
-				case 'n':
-					write2fifo("seek 9999");
-					break;
-				case 'm':
-					write2fifo("m");
-					break;
-				case 'p':
-					write2fifo("pause");
-				case 's':
-					printf("Playing....\n"
-					       "The following commands are available:\n"
-					       "q:stop\n" "p:pause\n" "n:next\n"
-					       "m:mute\n" "s:show this menu\n"
-					       "j:jump to next list\n");
-					break;
-				case 'j':
-					on_play_quit();
-					goto l_nextlist;
-				}
-			} while (n);
-			return 0;
-		} else {
-			on_play_quit();
-			return 1;
+		entry = readdir(songdir);
+		while (entry) {
+			fprintf(playlist_file, "%s%s\n", songlist[i],
+				entry->d_name);
+			entry = readdir(songdir);
 		}
-	} else {
-		printf("All the things are finished\n");
-		on_play_quit();
-		return 0;
+
+		closedir(songdir);
 	}
+	fclose(playlist_file);
+
+	//playing
+	strcpy(command, MPLAYER);
+	strcat(command, "-playlist .musica_playlist ");
+	strcat(command, MPLAYER_ENDING);
+
+	system("mkfifo /tmp/musica_fifofile");
+
+	int n = 1;
+	char control;
+	printf
+	    ("\033[31mIf you want to see the key bindings,please inpu 's'\n\033[0m");
+	sleep(SLEEP_TIME);
+	if (system(command) == 0) {
+		write2fifo("volume 100 q");
+		do {
+			control = getchar();
+			switch (control) {
+			case 'q':
+				on_play_quit();
+				n = 0;
+				break;
+			case 'n':
+				write2fifo("seek 9999");
+				break;
+			case 'm':
+				write2fifo("m");
+				break;
+			case 'p':
+				write2fifo("pause");
+			case 's':
+				printf("Playing....\n"
+				       "The following commands are available:\n"
+				       "q:stop\n" "p:pause\n" "n:next\n"
+				       "m:mute\n" "s:show this menu\n");
+				break;
+			}
+		} while (n);
+		return 0;
+	} else {
+		on_play_quit();
+		return 1;
+	}
+
+	printf("All the things are finished\n");
+	on_play_quit();
+	return 0;
+
 }
 
 int executer(char order[INPUT_LENGTH])
