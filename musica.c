@@ -13,7 +13,7 @@
 char songlist[SONGLIST_LENGTH][INPUT_LENGTH];
 int songlist_counter = 0;
 
-int save_config()
+int on_save_config()
 {
 	FILE *fp;
 	fp = fopen(CONFIG_FILE_PATH, "w");
@@ -31,6 +31,11 @@ int on_import()
 	if ((p_newdir = opendir(name_newdir)) == 0)
 		printf("%s:the directory doesn't exist\n", name_newdir);
 	else {
+		//if the last char is not '/' then it will be added
+		char*ptr;
+		for(ptr=name_newdir;*ptr!=0;ptr++);
+		if(*(ptr-1)!='/') *ptr='/';
+		
 		strcpy(songlist[songlist_counter], name_newdir);
 		songlist_counter++;
 		closedir(p_newdir);
@@ -42,7 +47,7 @@ int on_import()
 int on_add()
 {
 	on_import();
-	save_config();
+	on_save_config();
 	return 0;
 }
 
@@ -60,7 +65,7 @@ int on_del()
 		printf("\"%s\"%s\n", songlist[songlist_counter], " is deleted");
 		for (int i = 0; i < INPUT_LENGTH; i++)
 			songlist[songlist_counter][i] = (char)0;
-		save_config();
+		on_save_config();
 	} else
 		printf("The songlist is empty\n");
 	return 0;
@@ -124,9 +129,7 @@ int on_play()
 	fclose(playlist_file);
 
 	//playing
-	strcpy(command, MPLAYER);
-	strcat(command, "-playlist .musica_playlist ");
-	strcat(command, MPLAYER_ENDING);
+	sprintf(command,"%s %s %s",MPLAYER,"-playlist .musica_playlist",MPLAYER_ENDING);
 
 	system("mkfifo /tmp/musica_fifofile");
 
