@@ -14,7 +14,7 @@ clean:
 indent:
 	indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -o musica.c musica.c
 
-install:
+install:musica
 	cp musica $(destination)
 
 uninstall:
