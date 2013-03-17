@@ -12,14 +12,20 @@
 
 char songlist[SONGLIST_LENGTH][INPUT_LENGTH];
 int songlist_counter = 0;
-char play_order;
+char play_order = 'd';
 
 int on_save_config()
 {
 	FILE *fp;
 	fp = fopen(CONFIG_FILE_PATH, "w");
+
+	//save songlist
 	for (int i = 0; i < SONGLIST_LENGTH && songlist[i][0] != (char)0; i++)
 		fprintf(fp, "%s %s\n", "import", songlist[i]);
+
+	//save play_order
+	fprintf(fp, "order %c\n", play_order);
+
 	fclose(fp);
 	return 0;
 }
@@ -33,15 +39,14 @@ int on_import()
 		printf("%s:the directory doesn't exist\n", name_newdir);
 	else {
 		//if the last char is not '/' then it will be added
-		char*ptr;
-		for(ptr=name_newdir;*ptr!=0;ptr++);
-		if(*(ptr-1)!='/')
-		{
-			*ptr='/';
-			*(ptr+1)=0;
+		char *ptr;
+		for (ptr = name_newdir; *ptr != 0; ptr++) ;
+		if (*(ptr - 1) != '/') {
+			*ptr = '/';
+			*(ptr + 1) = 0;
 		}
-		printf("%s is imported\n",name_newdir);
-		
+		printf("%s is imported\n", name_newdir);
+
 		strcpy(songlist[songlist_counter], name_newdir);
 		songlist_counter++;
 		closedir(p_newdir);
@@ -89,7 +94,8 @@ int on_help()
 	       "save :Save the options into the config file\n"
 	       "order :set play order(will not save unless run 'save' after it),'d' stands for default,'r' stands for ramdom\n"
 	       "exit quit bye q :Get out of here\n"
-	       "\nIf you want to keep your own \".musica_config\",please not to add or delete anything from this program.\n");
+	       "\nIf you want to keep your own \".musica_config\",please not to add or delete anything from this program.\n"
+	       "\nCurrent order:%c\n", play_order);
 	return 0;
 }
 
@@ -135,10 +141,13 @@ int on_play()
 		closedir(songdir);
 	}
 	fclose(playlist_file);
-	if (play_order=='r') system("sort <.musica_playlist >.musica_playlist.backup -R;mv .musica_playlist.backup .musica_playlist");
+	if (play_order == 'r')
+		system
+		    ("sort <.musica_playlist >.musica_playlist.backup -R;mv .musica_playlist.backup .musica_playlist");
 
 	//playing
-	sprintf(command,"%s %s %s",MPLAYER,"-playlist .musica_playlist",MPLAYER_ENDING);
+	sprintf(command, "%s %s %s", MPLAYER, "-playlist .musica_playlist",
+		MPLAYER_ENDING);
 
 	system("mkfifo /tmp/musica_fifofile");
 
@@ -188,8 +197,9 @@ int on_order()
 {
 	char order_inputed;
 	getchar();
-	order_inputed=getchar();
-	if(order_inputed=='r' || order_inputed=='d') play_order=order_inputed;
+	order_inputed = getchar();
+	if (order_inputed == 'r' || order_inputed == 'd')
+		play_order = order_inputed;
 	return 0;
 }
 
