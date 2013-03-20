@@ -65,7 +65,7 @@ int on_add()
 int on_showlist()
 {
 	for (int i = 0; i < SONGLIST_LENGTH && songlist[i][0] != (char)0; i++)
-		printf("%s\n", songlist[i]);
+		printf("[%d] %s\n", i,songlist[i]);
 	return 0;
 }
 
