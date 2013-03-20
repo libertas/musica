@@ -87,6 +87,7 @@ int on_help()
 	printf("Need help?\n\n"
 	       "help ? :Show this list\n"
 	       "play:Play the songs in the song list\n"
+	       "playone:Play one of the directories in the list(input a number follow it)\n"
 	       "add :Add a new song list and save it into the config file\n"
 	       "import :Add a new song list without saving it\n"
 	       "del delete :Delete a song list\n"
@@ -115,7 +116,7 @@ int on_play_quit()
 	return 0;
 }
 
-int on_play()
+int on_play(char setting,int which)
 {
 	char command[strlen(MPLAYER) + INPUT_LENGTH * SONGLIST_LENGTH +
 		     strlen(MPLAYER_ENDING)];
@@ -128,6 +129,7 @@ int on_play()
 	DIR *songdir;
 	struct dirent *entry;
 	FILE *playlist_file = fopen(".musica_playlist", "w");
+	if (setting=='d'){
 	for (int i = 0; i < songlist_counter; i++) {
 		songdir = opendir(songlist[i]);
 
@@ -140,6 +142,13 @@ int on_play()
 
 		closedir(songdir);
 	}
+	}
+	else {
+	songdir=opendir(songlist[which]);
+	entry=readdir(songdir);
+	fprintf(playlist_file,"%s%s\n",songlist[which],entry->d_name);
+	closedir(songdir);
+}
 	fclose(playlist_file);
 	if (play_order == 'r')
 		system
@@ -224,10 +233,18 @@ int executer(char order[INPUT_LENGTH])
 		on_showlist();
 
 	else if (strcmp(order, "play") == 0) {
-		if (on_play())
+		if (on_play('d',0))
 			printf
 			    ("The songlist cannot be played.Please check the song list\n");
 	}
+
+	else if (strcmp(order,"playone" )==0){
+		int which;
+		scanf("%d",&which);
+                if (on_play('a',which))
+                        printf
+                            ("The songlist cannot be played.Please check the song list\n");
+        }
 
 	else if (strcmp(order, "save") == 0)
 		on_save_config();
