@@ -77,14 +77,18 @@ int on_showlist()
 int on_del()
 {
 	if (songlist_counter != 0) {
-		songlist_counter--;
-		printf("\"%s\"%s\n", songlist[songlist_counter], " is deleted");
+		int which;
+		scanf("%d", &which);	//delete which
+		for (int i = which; i < SONGLIST_LENGTH; i++)
+			strcpy(songlist[i], songlist[i + 1]);
 		for (int i = 0; i < INPUT_LENGTH; i++)
 			songlist[songlist_counter][i] = (char)0;
+		songlist_counter--;
 		on_save_config();
+		return 0;
 	} else
 		printf("The songlist is empty\n");
-	return 0;
+	return 1;
 }
 
 int on_help()
@@ -95,7 +99,7 @@ int on_help()
 	       "playone:Play one of the directories in the list(input a number follow it)\n"
 	       "add :Add a new song list and save it into the config file\n"
 	       "import :Add a new song list without saving it\n"
-	       "del delete :Delete a song list\n"
+	       "del delete :Delete a song list(must be followed by a number)\n"
 	       "showlist show :Show the songlists you have added\n"
 	       "save :Save the options into the config file\n"
 	       "order :set play order(will not save unless run 'save' after it),'d' stands for default,'r' stands for ramdom\n"
