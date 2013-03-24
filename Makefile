@@ -7,7 +7,7 @@ musica:$(objects)
 	$(CC) $(CFLAGS)   -o musica $(objects)
 
 
-.PHONY:clean indent install
+.PHONY:clean indent install uninstall
 clean:
 	-rm $(objects)
 	-rm musica
