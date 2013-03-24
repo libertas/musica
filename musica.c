@@ -65,7 +65,7 @@ int on_add()
 int on_showlist()
 {
 	for (int i = 0; i < SONGLIST_LENGTH && songlist[i][0] != (char)0; i++)
-		printf("[%d] %s\n", i,songlist[i]);
+		printf("[%d] %s\n", i, songlist[i]);
 	return 0;
 }
 
@@ -116,7 +116,7 @@ int on_play_quit()
 	return 0;
 }
 
-int on_play(char setting,int which)
+int on_play(char setting, int which)
 {
 	char command[strlen(MPLAYER) + INPUT_LENGTH * SONGLIST_LENGTH +
 		     strlen(MPLAYER_ENDING)];
@@ -129,26 +129,26 @@ int on_play(char setting,int which)
 	DIR *songdir;
 	struct dirent *entry;
 	FILE *playlist_file = fopen(".musica_playlist", "w");
-	if (setting=='d'){
-	for (int i = 0; i < songlist_counter; i++) {
-		songdir = opendir(songlist[i]);
+	if (setting == 'd') {
+		for (int i = 0; i < songlist_counter; i++) {
+			songdir = opendir(songlist[i]);
 
-		entry = readdir(songdir);
-		while (entry) {
-			fprintf(playlist_file, "%s%s\n", songlist[i],
-				entry->d_name);
 			entry = readdir(songdir);
-		}
+			while (entry) {
+				fprintf(playlist_file, "%s%s\n", songlist[i],
+					entry->d_name);
+				entry = readdir(songdir);
+			}
 
+			closedir(songdir);
+		}
+	} else {
+		songdir = opendir(songlist[which]);
+		entry = readdir(songdir);
+		fprintf(playlist_file, "%s%s\n", songlist[which],
+			entry->d_name);
 		closedir(songdir);
 	}
-	}
-	else {
-	songdir=opendir(songlist[which]);
-	entry=readdir(songdir);
-	fprintf(playlist_file,"%s%s\n",songlist[which],entry->d_name);
-	closedir(songdir);
-}
 	fclose(playlist_file);
 	if (play_order == 'r')
 		system
@@ -233,18 +233,18 @@ int executer(char order[INPUT_LENGTH])
 		on_showlist();
 
 	else if (strcmp(order, "play") == 0) {
-		if (on_play('d',0))
+		if (on_play('d', 0))
 			printf
 			    ("The songlist cannot be played.Please check the song list\n");
 	}
 
-	else if (strcmp(order,"playone" )==0){
+	else if (strcmp(order, "playone") == 0) {
 		int which;
-		scanf("%d",&which);
-                if (on_play('a',which))
-                        printf
-                            ("The songlist cannot be played.Please check the song list\n");
-        }
+		scanf("%d", &which);
+		if (on_play('a', which))
+			printf
+			    ("The songlist cannot be played.Please check the song list\n");
+	}
 
 	else if (strcmp(order, "save") == 0)
 		on_save_config();
