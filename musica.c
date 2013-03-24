@@ -45,11 +45,16 @@ int on_import()
 			*ptr = '/';
 			*(ptr + 1) = 0;
 		}
-		printf("%s is imported\n", name_newdir);
+		//if exist
+		for (int i = 0; i < SONGLIST_LENGTH; i++)
+			if (strcmp(songlist[i], name_newdir) == 0)
+				return 1;
 
+		//if all the things are right
 		strcpy(songlist[songlist_counter], name_newdir);
 		songlist_counter++;
 		closedir(p_newdir);
+		printf("%s is imported\n", name_newdir);
 		return 0;
 	}
 	return 1;
