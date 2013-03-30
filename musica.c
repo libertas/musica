@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <dirent.h>
-#define INPUT_LENGTH 200
-#define SONGLIST_LENGTH 20
+#define INPUT_LENGTH 256
+#define SONGLIST_LENGTH 256
 #define CONFIG_FILE_PATH ".musica_config"
 #define MPLAYER "mplayer -slave -input file=/tmp/musica_fifofile"
 #define MPLAYER_ENDING "&"
