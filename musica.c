@@ -82,8 +82,8 @@ int on_del()
 		for (int i = which; i < SONGLIST_LENGTH; i++)
 			strcpy(songlist[i], songlist[i + 1]);
 		//for (int i = 0; i < INPUT_LENGTH; i++)
-			//songlist[songlist_counter][i] = (char)0;
-		songlist[songlist_counter][0] = (char)0; //faster
+		//songlist[songlist_counter][i] = (char)0;
+		songlist[songlist_counter][0] = (char)0;	//faster
 		songlist_counter--;
 		on_save_config();
 		return 0;
@@ -136,33 +136,29 @@ int on_play(char setting, int which)
 		return 1;
 
 	//preparing playlist
-	DIR *songdir;
-	struct dirent *entry;
-	FILE *playlist_file = fopen(".musica_playlist", "w");
-	if (setting == 'd') {
-		for (int i = 0; i < songlist_counter; i++) {
+	{
+		DIR *songdir;
+		struct dirent *entry;
+		FILE *playlist_file = fopen(".musica_playlist", "w");
+		int i;
+		if (setting == 'a')
+			i = which;
+		else
+			i = 0;
+		for (i = i; i < songlist_counter; i++) {
 			songdir = opendir(songlist[i]);
-
 			entry = readdir(songdir);
 			while (entry) {
 				fprintf(playlist_file, "%s%s\n", songlist[i],
 					entry->d_name);
 				entry = readdir(songdir);
 			}
-
 			closedir(songdir);
+			if (i == which)
+				break;
 		}
-	} else {
-		songdir = opendir(songlist[which]);
-		entry = readdir(songdir);
-		while (entry) {
-		fprintf(playlist_file, "%s%s\n", songlist[which],
-			entry->d_name);
-		entry = readdir(songdir);
+		fclose(playlist_file);
 	}
-		closedir(songdir);
-	}
-	fclose(playlist_file);
 	if (play_order == 'r')
 		system
 		    ("sort <.musica_playlist >.musica_playlist.backup -R;mv .musica_playlist.backup .musica_playlist");
@@ -170,7 +166,6 @@ int on_play(char setting, int which)
 	//playing
 	sprintf(command, "%s %s %s", MPLAYER, "-playlist .musica_playlist",
 		MPLAYER_ENDING);
-
 	system("mkfifo /tmp/musica_fifofile");
 
 	int n = 1;
