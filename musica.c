@@ -81,8 +81,9 @@ int on_del()
 		scanf("%d", &which);	//delete which
 		for (int i = which; i < SONGLIST_LENGTH; i++)
 			strcpy(songlist[i], songlist[i + 1]);
-		for (int i = 0; i < INPUT_LENGTH; i++)
-			songlist[songlist_counter][i] = (char)0;
+		//for (int i = 0; i < INPUT_LENGTH; i++)
+			//songlist[songlist_counter][i] = (char)0;
+		songlist[songlist_counter][0] = (char)0; //faster
 		songlist_counter--;
 		on_save_config();
 		return 0;
