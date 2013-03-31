@@ -155,8 +155,11 @@ int on_play(char setting, int which)
 	} else {
 		songdir = opendir(songlist[which]);
 		entry = readdir(songdir);
+		while (entry) {
 		fprintf(playlist_file, "%s%s\n", songlist[which],
 			entry->d_name);
+		entry = readdir(songdir);
+	}
 		closedir(songdir);
 	}
 	fclose(playlist_file);
