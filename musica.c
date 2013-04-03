@@ -30,21 +30,27 @@ int on_save_config()
 	return 0;
 }
 
-int on_import()
+int format_dir_for_import(char *name_newdir)
 {
-	char name_newdir[INPUT_LENGTH];
+	//if the last char is not '/' then it will be added
+	char *ptr;
+	for (ptr = name_newdir; *ptr != 0; ptr++) ;
+	if (*(ptr - 1) != '/') {
+		*ptr = '/';
+		*(ptr + 1) = 0;
+	}
+	return 0;
+}
+
+int import(char *name_newdir)
+{
 	DIR *p_newdir;
-	scanf("%s^[\n]", name_newdir);
-	if ((p_newdir = opendir(name_newdir)) == 0)
+	if ((p_newdir = opendir(name_newdir)) == 0) {
 		printf("%s:the directory doesn't exist\n", name_newdir);
-	else {
-		//if the last char is not '/' then it will be added
-		char *ptr;
-		for (ptr = name_newdir; *ptr != 0; ptr++) ;
-		if (*(ptr - 1) != '/') {
-			*ptr = '/';
-			*(ptr + 1) = 0;
-		}
+		return 1;
+	} else {
+		format_dir_for_import(name_newdir);
+
 		//if exist
 		for (int i = 0; i < SONGLIST_LENGTH; i++)
 			if (strcmp(songlist[i], name_newdir) == 0)
@@ -57,12 +63,66 @@ int on_import()
 		printf("%s is imported\n", name_newdir);
 		return 0;
 	}
-	return 1;
+}
+
+char **getdirname_loop(DIR *dirp_root,char *name_root)
+{
+	char **result = calloc(sizeof(char), SONGLIST_LENGTH);	//it must be freed when it is not needed
+
+	//finding directories
+	DIR *dirp = dirp_root;
+	{
+		int i = 0;
+		for (struct dirent * entry = readdir(dirp); entry != 0;
+		     entry = readdir(dirp)) {
+			if ((int)(entry->d_type) == 4	/*"4" means it is a directory */
+			    && strcmp(entry->d_name, ".") != 0
+			    && strcmp(entry->d_name, "..") != 0) {
+					result[i]=calloc(sizeof(char),INPUT_LENGTH);
+					strcpy(result[i],name_root);
+					strcat(result[i], entry->d_name);
+					i++;
+			}
+		}
+	}
+
+	return result;
+}
+
+int on_importl(char *name_newdir)
+{
+	DIR *p_newdir;
+	if ((p_newdir = opendir(name_newdir)) == 0) {
+		printf("%s:the directory doesn't exist\n", name_newdir);
+		return 1;
+	} else {
+		format_dir_for_import(name_newdir);
+		
+		char **dirnames;
+		dirnames=getdirname_loop(p_newdir,name_newdir);
+		for(int i = 0;i<SONGLIST_LENGTH && dirnames[i]!=0;i++) import(dirnames[i]);
+		for(int i=0;i<SONGLIST_LENGTH && dirnames[i]!=0;i++)free(dirnames[i]);
+		free(dirnames);
+
+		closedir(p_newdir);
+	}
+	return 0;
 }
 
 int on_add()
 {
-	on_import();
+	char name_newdir[INPUT_LENGTH];
+	scanf("%s^[\n]", name_newdir);
+	import(name_newdir);
+	on_save_config();
+	return 0;
+}
+
+int on_addl()
+{
+	char name_newdir[INPUT_LENGTH];
+	scanf("%s^[\n]", name_newdir);
+	on_importl(name_newdir);
 	on_save_config();
 	return 0;
 }
@@ -96,10 +156,12 @@ int on_help()
 {
 	printf("Need help?\n\n"
 	       "help ? :Show this list\n"
-	       "play:Play the songs in the song list\n"
-	       "playone:Play one of the directories in the list(input a number follow it)\n"
+	       "play :Play the songs in the song list\n"
+	       "playone :Play one of the directories in the list(input a number follow it)\n"
 	       "add :Add a new song list and save it into the config file\n"
 	       "import :Add a new song list without saving it\n"
+	       "importl :the same as import but import all the direcotries in the directory\n"
+	       "addl :addl is to add what importl is to import\n"
 	       "del delete :Delete a song list(must be followed by a number)\n"
 	       "showlist show :Show the songlists you have added\n"
 	       "save :Save the options into the config file\n"
@@ -140,17 +202,15 @@ int on_play(char setting, int which)
 		DIR *songdir;
 		struct dirent *entry;
 		FILE *playlist_file = fopen(".musica_playlist", "w");
-		int i;
-		if (setting == 'a')
-			i = which;
+		if (setting == 'a') ;
 		else
-			i = 0;
-		for (i = i; i < songlist_counter; i++) {
+			which = 0;
+		for (int i = which; i < songlist_counter; i++) {
 			songdir = opendir(songlist[i]);
 			entry = readdir(songdir);
 			while (entry) {
-				fprintf(playlist_file, "%s%s\n", songlist[i],
-					entry->d_name);
+				fprintf(playlist_file, "%s%s\n",
+					songlist[i], entry->d_name);
 				entry = readdir(songdir);
 			}
 			closedir(songdir);
@@ -164,8 +224,8 @@ int on_play(char setting, int which)
 		    ("sort <.musica_playlist >.musica_playlist.backup -R;mv .musica_playlist.backup .musica_playlist");
 
 	//playing
-	sprintf(command, "%s %s %s", MPLAYER, "-playlist .musica_playlist",
-		MPLAYER_ENDING);
+	sprintf(command, "%s %s %s", MPLAYER,
+		"-playlist .musica_playlist", MPLAYER_ENDING);
 	system("mkfifo /tmp/musica_fifofile");
 
 	int n = 1;
@@ -222,11 +282,23 @@ int on_order()
 
 int executer(char order[INPUT_LENGTH])
 {
+	char name_newdir[INPUT_LENGTH];
+
 	if (strcmp(order, "add") == 0)
 		on_add();
 
-	else if (strcmp(order, "import") == 0)
-		on_import();
+	else if (strcmp(order, "addl") == 0)
+		on_addl();
+
+	else if (strcmp(order, "import") == 0) {
+		scanf("%s^[\n]", name_newdir);
+		import(name_newdir);
+	}
+
+	else if (strcmp(order, "importl") == 0) {
+		scanf("%s^[\n]", name_newdir);
+		on_importl(name_newdir);
+	}
 
 	else if (strcmp(order, "order") == 0)
 		on_order();
@@ -258,8 +330,8 @@ int executer(char order[INPUT_LENGTH])
 		on_save_config();
 
 	else if (strcmp(order, "exit") == 0
-		 || strcmp(order, "quit") == 0 || strcmp(order, "bye") == 0
-		 || strcmp(order, "q") == 0)
+		 || strcmp(order, "quit") == 0
+		 || strcmp(order, "bye") == 0 || strcmp(order, "q") == 0)
 		return 1;
 
 	else if (strcmp(order, "") == 0) {
