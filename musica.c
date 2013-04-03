@@ -65,28 +65,36 @@ int import(char *name_newdir)
 	}
 }
 
-char **getdirname_loop(DIR * dirp_root, char *name_root)
+int getdirname_loop(DIR * dirp_root, char *name_root)
 {
-	char **result = calloc(sizeof(char), SONGLIST_LENGTH);	//it must be freed when it is not needed
-
 	//finding directories
-	DIR *dirp = dirp_root;
 	{
-		int i = 0;
-		for (struct dirent * entry = readdir(dirp); entry != 0;
-		     entry = readdir(dirp)) {
+		import(name_root);
+		//int i = 0;
+		for (struct dirent * entry = readdir(dirp_root); entry != 0;
+		     entry = readdir(dirp_root)) {
 			if ((int)(entry->d_type) == 4	/*"4" means it is a directory */
 			    && strcmp(entry->d_name, ".") != 0
 			    && strcmp(entry->d_name, "..") != 0) {
-				result[i] = calloc(sizeof(char), INPUT_LENGTH);
-				strcpy(result[i], name_root);
-				strcat(result[i], entry->d_name);
-				i++;
+
+				char name_new[INPUT_LENGTH];
+				format_dir_for_import(name_root);
+				strcpy(name_new,name_root);
+				strcat(name_new,entry->d_name);
+				format_dir_for_import(name_new);
+				import(name_new);
+
+				//recursion
+				DIR *dirp;
+				if((dirp=opendir(name_new))!=0){
+					getdirname_loop(dirp,name_new);
+					closedir(dirp);
+				}
 			}
 		}
 	}
 
-	return result;
+	return 0;
 }
 
 int on_importl(char *name_newdir)
@@ -96,16 +104,7 @@ int on_importl(char *name_newdir)
 		printf("%s:the directory doesn't exist\n", name_newdir);
 		return 1;
 	} else {
-		format_dir_for_import(name_newdir);
-
-		char **dirnames;
-		dirnames = getdirname_loop(p_newdir, name_newdir);
-		for (int i = 0; i < SONGLIST_LENGTH && dirnames[i] != 0; i++)
-			import(dirnames[i]);
-		for (int i = 0; i < SONGLIST_LENGTH && dirnames[i] != 0; i++)
-			free(dirnames[i]);
-		free(dirnames);
-
+		getdirname_loop(p_newdir, name_newdir);
 		closedir(p_newdir);
 	}
 	return 0;
@@ -133,6 +132,15 @@ int on_showlist()
 {
 	for (int i = 0; i < SONGLIST_LENGTH && songlist[i][0] != (char)0; i++)
 		printf("[%d] %s\n", i, songlist[i]);
+	return 0;
+}
+
+int on_delall()
+{
+	for (int i = 0; i < songlist_counter; i++)
+		songlist[i][0] = (char)0;
+	songlist_counter = 0;
+	on_save_config();
 	return 0;
 }
 
@@ -165,6 +173,7 @@ int on_help()
 	       "importl :the same as import but import all the direcotries in the directory\n"
 	       "addl :addl is to add what importl is to import\n"
 	       "del delete :Delete a song list(must be followed by a number)\n"
+	       "delall deleteall :Delete all the things in the song list\n"
 	       "showlist show :Show the songlists you have added\n"
 	       "save :Save the options into the config file\n"
 	       "order :set play order(will not save unless run 'save' after it),'d' stands for default,'r' stands for ramdom\n"
@@ -307,6 +316,10 @@ int executer(char order[INPUT_LENGTH])
 
 	else if (strcmp(order, "del") == 0 || strcmp(order, "delete") == 0)
 		on_del();
+
+	else if (strcmp(order, "delall") == 0
+		 || strcmp(order, "deleteall") == 0)
+		on_delall();
 
 	else if (strcmp(order, "help") == 0 || strcmp(order, "?") == 0)
 		on_help();
