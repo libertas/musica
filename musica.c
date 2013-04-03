@@ -65,7 +65,7 @@ int import(char *name_newdir)
 	}
 }
 
-char **getdirname_loop(DIR *dirp_root,char *name_root)
+char **getdirname_loop(DIR * dirp_root, char *name_root)
 {
 	char **result = calloc(sizeof(char), SONGLIST_LENGTH);	//it must be freed when it is not needed
 
@@ -78,10 +78,10 @@ char **getdirname_loop(DIR *dirp_root,char *name_root)
 			if ((int)(entry->d_type) == 4	/*"4" means it is a directory */
 			    && strcmp(entry->d_name, ".") != 0
 			    && strcmp(entry->d_name, "..") != 0) {
-					result[i]=calloc(sizeof(char),INPUT_LENGTH);
-					strcpy(result[i],name_root);
-					strcat(result[i], entry->d_name);
-					i++;
+				result[i] = calloc(sizeof(char), INPUT_LENGTH);
+				strcpy(result[i], name_root);
+				strcat(result[i], entry->d_name);
+				i++;
 			}
 		}
 	}
@@ -97,11 +97,13 @@ int on_importl(char *name_newdir)
 		return 1;
 	} else {
 		format_dir_for_import(name_newdir);
-		
+
 		char **dirnames;
-		dirnames=getdirname_loop(p_newdir,name_newdir);
-		for(int i = 0;i<SONGLIST_LENGTH && dirnames[i]!=0;i++) import(dirnames[i]);
-		for(int i=0;i<SONGLIST_LENGTH && dirnames[i]!=0;i++)free(dirnames[i]);
+		dirnames = getdirname_loop(p_newdir, name_newdir);
+		for (int i = 0; i < SONGLIST_LENGTH && dirnames[i] != 0; i++)
+			import(dirnames[i]);
+		for (int i = 0; i < SONGLIST_LENGTH && dirnames[i] != 0; i++)
+			free(dirnames[i]);
 		free(dirnames);
 
 		closedir(p_newdir);
@@ -112,7 +114,7 @@ int on_importl(char *name_newdir)
 int on_add()
 {
 	char name_newdir[INPUT_LENGTH];
-	scanf("%s^[\n]", name_newdir);
+	scanf(" %[^\n]", name_newdir);
 	import(name_newdir);
 	on_save_config();
 	return 0;
@@ -121,7 +123,7 @@ int on_add()
 int on_addl()
 {
 	char name_newdir[INPUT_LENGTH];
-	scanf("%s^[\n]", name_newdir);
+	scanf(" %[^\n]", name_newdir);
 	on_importl(name_newdir);
 	on_save_config();
 	return 0;
@@ -214,7 +216,7 @@ int on_play(char setting, int which)
 				entry = readdir(songdir);
 			}
 			closedir(songdir);
-			if (which!=0)
+			if (which != 0)
 				break;
 		}
 		fclose(playlist_file);
@@ -291,12 +293,12 @@ int executer(char order[INPUT_LENGTH])
 		on_addl();
 
 	else if (strcmp(order, "import") == 0) {
-		scanf("%s^[\n]", name_newdir);
+		scanf(" %[^\n]", name_newdir);
 		import(name_newdir);
 	}
 
 	else if (strcmp(order, "importl") == 0) {
-		scanf("%s^[\n]", name_newdir);
+		scanf(" %[^\n]", name_newdir);
 		on_importl(name_newdir);
 	}
 
@@ -371,7 +373,7 @@ int main()
 				printf(">");
 			for (int i = 0; i < INPUT_LENGTH; i++)
 				order[i] = 0;
-			scanf("%s[^\n]", order);
+			scanf("%s", order);
 			executer_returned = executer(order);
 			if (executer_returned && (stdin == stdin_backup)) {
 				system("rm /tmp/musica.lck");
