@@ -185,16 +185,18 @@ int on_help()
 
 int write2fifo(char msg[])
 {
-	FILE *fifo = fopen("/tmp/musica_fifofile", "w");
-	fprintf(fifo, "%s\n", msg);
-	fclose(fifo);
+	FILE *fifo;
+	if ((fifo = fopen("/tmp/musica_fifofile", "w")) != 0) {
+		fprintf(fifo, "%s\n", msg);
+		fclose(fifo);
+	}
 	return 0;
 }
 
 int on_play_quit()
 {
-	write2fifo("quit");
 	system("rm /tmp/musica_fifofile");
+	write2fifo("quit");
 	sleep(SLEEP_TIME);
 	return 0;
 }
@@ -239,13 +241,13 @@ int on_play(char setting, int which)
 		"-playlist .musica_playlist", MPLAYER_ENDING);
 	system("mkfifo /tmp/musica_fifofile");
 
-	int n = 1;
-	char control;
 	printf
 	    ("\033[31mIf you want to see the key bindings,please inpu 's'\n\033[0m");
 	sleep(SLEEP_TIME);
 	if (system(command) == 0) {
 		write2fifo("volume 100 q");
+		char control;
+		int n = 1;
 		do {
 			control = getchar();
 			switch (control) {
