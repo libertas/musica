@@ -79,15 +79,15 @@ int getdirname_loop(DIR * dirp_root, char *name_root)
 
 				char name_new[INPUT_LENGTH];
 				format_dir_for_import(name_root);
-				strcpy(name_new,name_root);
-				strcat(name_new,entry->d_name);
+				strcpy(name_new, name_root);
+				strcat(name_new, entry->d_name);
 				format_dir_for_import(name_new);
 				import(name_new);
 
 				//recursion
 				DIR *dirp;
-				if((dirp=opendir(name_new))!=0){
-					getdirname_loop(dirp,name_new);
+				if ((dirp = opendir(name_new)) != 0) {
+					getdirname_loop(dirp, name_new);
 					closedir(dirp);
 				}
 			}
@@ -367,8 +367,6 @@ int main()
 		//preparing
 		char order[INPUT_LENGTH];
 		int executer_returned;
-		printf("Welcome to Musica\n"
-		       "If you don't know how to use it,entry \"help\"\n");
 
 		//change directory
 		char *home_path;
@@ -394,6 +392,8 @@ int main()
 			} else if (executer_returned && (stdin != stdin_backup)) {
 				fclose(stdin);
 				stdin = stdin_backup;
+				printf("\nWelcome to Musica\n"
+				       "If you don't know how to use it,entry \"help\"\n");
 			}
 		}
 	} else {
