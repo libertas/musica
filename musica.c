@@ -214,7 +214,7 @@ int on_play(char setting, int which)
 				entry = readdir(songdir);
 			}
 			closedir(songdir);
-			if (i == which)
+			if (which!=0)
 				break;
 		}
 		fclose(playlist_file);
