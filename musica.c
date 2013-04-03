@@ -177,6 +177,8 @@ int on_help()
 	       "showlist show :Show the songlists you have added\n"
 	       "save :Save the options into the config file\n"
 	       "order :set play order(will not save unless run 'save' after it),'d' stands for default,'r' stands for ramdom\n"
+	       "up :move the list up\n"
+	       "down :move the list down\n"
 	       "exit quit bye q :Get out of here\n"
 	       "\nIf you want to keep your own \".musica_config\",please not to add or delete anything from this program.\n"
 	       "\nCurrent order:%c\n", play_order);
@@ -293,6 +295,30 @@ int on_order()
 	return 0;
 }
 
+int on_up()
+{
+	int which;
+	char buffer[INPUT_LENGTH];
+	scanf("%d",&which);
+	if(which<=0 || which>songlist_counter) return 1;
+	strcpy(buffer,songlist[which]);
+	strcpy(songlist[which],songlist[which-1]);
+	strcpy(songlist[which-1],buffer);
+	return 0;
+}
+
+int on_down()
+{
+	int which;
+	char buffer[INPUT_LENGTH];
+	scanf("%d",&which);
+	if(which<0 || which>=songlist_counter-1) return 1;
+	strcpy(buffer,songlist[which]);
+	strcpy(songlist[which],songlist[which+1]);
+	strcpy(songlist[which+1],buffer);
+	return 0;
+}
+
 int executer(char order[INPUT_LENGTH])
 {
 	char name_newdir[INPUT_LENGTH];
@@ -345,6 +371,12 @@ int executer(char order[INPUT_LENGTH])
 
 	else if (strcmp(order, "save") == 0)
 		on_save_config();
+	
+	else if (strcmp(order, "up") == 0)
+		on_up();
+	
+	else if (strcmp(order, "down") == 0)
+		on_down();
 
 	else if (strcmp(order, "exit") == 0
 		 || strcmp(order, "quit") == 0
