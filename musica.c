@@ -197,14 +197,30 @@ int write2fifo(char msg[])
 
 int on_play_quit()
 {
-	system("rm /tmp/musica_fifofile");
 	write2fifo("quit");
+	system("rm /tmp/musica_fifofile");
 	sleep(SLEEP_TIME);
 	return 0;
 }
 
 int on_play(char setting, int which)
 {
+	//checking if musica_fifofile exists
+	FILE *fifo;
+	if ((fifo = fopen("/tmp/musica_fifofile", "r")) != 0){
+		printf("/tmp/musica_fifo file exists,is there another musica running?(Y/n)");
+		char ans;
+		scanf(" %[YyNn]",&ans);
+		if(ans=='n' || ans=='N'){
+			printf("Then recreate it\n");
+			system("rm /tmp/musica_fifofile");
+		}
+		else{
+			printf("musica cannot playing two songs at the same time\n");
+			return 1;
+		}
+	}
+	
 	char command[strlen(MPLAYER) + INPUT_LENGTH * SONGLIST_LENGTH +
 		     strlen(MPLAYER_ENDING)];
 
@@ -278,18 +294,12 @@ int on_play(char setting, int which)
 		on_play_quit();
 		return 1;
 	}
-
-	printf("All the things are finished\n");
-	on_play_quit();
-	return 0;
-
 }
 
 int on_order()
 {
 	char order_inputed;
-	getchar();
-	order_inputed = getchar();
+	scanf(" %c",&order_inputed);
 	if (order_inputed == 'r' || order_inputed == 'd')
 		play_order = order_inputed;
 	return 0;
@@ -392,12 +402,6 @@ int executer(char order[INPUT_LENGTH])
 
 int main()
 {
-	//checking lock file
-	FILE *lock;
-	if ((lock = fopen("/tmp/musica.lck", "r")) == 0) {
-	      l_checking:
-		system("echo \"1\">/tmp/musica.lck");
-
 		//preparing
 		char order[INPUT_LENGTH];
 		int executer_returned;
@@ -420,26 +424,16 @@ int main()
 				order[i] = 0;
 			scanf("%s", order);
 			executer_returned = executer(order);
-			if (executer_returned && (stdin == stdin_backup)) {
-				system("rm /tmp/musica.lck");
+			if (executer_returned && (stdin == stdin_backup)) 
 				break;
-			} else if (executer_returned && (stdin != stdin_backup)) {
+			 else if (executer_returned && (stdin != stdin_backup)) {
 				fclose(stdin);
 				stdin = stdin_backup;
 				printf("\nWelcome to Musica\n"
 				       "If you don't know how to use it,entry \"help\"\n");
 			}
 		}
-	} else {
-		fclose(lock);
-		printf
-		    ("Another musica is running.If not,please delete /tmp/musica.lck\n"
-		     "Do you want to delete the file and run musica now?(y/N)");
-		if (getchar() == 'y' || getchar() == 'Y') {
-			system("rm /tmp/musica.lck");
-			goto l_checking;
-		}
-	}
+	
 	printf("Bye!\n");
 	return 0;
 }
