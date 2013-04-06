@@ -207,6 +207,7 @@ int on_play(char setting, int which)
 {
 	//checking if musica_fifofile exists
 	FILE *fifo;
+	printf("If this lasts too long,please use Ctrl+C and delete /tmp/musica_fifofle,then restart this program\n");
 	if ((fifo = fopen("/tmp/musica_fifofile", "r")) != 0){
 		printf("/tmp/musica_fifo file exists,is there another musica running?(Y/n)");
 		char ans;
@@ -214,9 +215,11 @@ int on_play(char setting, int which)
 		if(ans=='n' || ans=='N'){
 			printf("Then recreate it\n");
 			system("rm /tmp/musica_fifofile");
+			fclose(fifo);
 		}
 		else{
 			printf("musica cannot playing two songs at the same time\n");
+			fclose(fifo);
 			return 1;
 		}
 	}
