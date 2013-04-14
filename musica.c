@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <sys/stat.h>
 #define INPUT_LENGTH 256
 #define SONGLIST_LENGTH 256
 #define CONFIG_FILE_PATH ".musica_config"
@@ -206,20 +207,17 @@ int on_play_quit()
 int on_play(char setting, int which)
 {
 	//checking if musica_fifofile exists
-	FILE *fifo;
-	printf("If this lasts too long,please use Ctrl+C and delete /tmp/musica_fifofle,then restart this program\n");
-	if ((fifo = fopen("/tmp/musica_fifofile", "r")) != 0){
+	if(mkfifo("/tmp/musica_fifofile",0644)!=0){
 		printf("/tmp/musica_fifo file exists,is there another musica running?(Y/n)");
 		char ans;
 		scanf(" %[YyNn]",&ans);
 		if(ans=='n' || ans=='N'){
 			printf("Then recreate it\n");
 			system("rm /tmp/musica_fifofile");
-			fclose(fifo);
+			system("mkfifo /tmp/musica_fifofile");
 		}
 		else{
 			printf("musica cannot playing two songs at the same time\n");
-			fclose(fifo);
 			return 1;
 		}
 	}
@@ -260,7 +258,6 @@ int on_play(char setting, int which)
 	//playing
 	sprintf(command, "%s %s %s", MPLAYER,
 		"-playlist .musica_playlist", MPLAYER_ENDING);
-	system("mkfifo /tmp/musica_fifofile");
 
 	printf
 	    ("\033[31mIf you want to see the key bindings,please inpu 's'\n\033[0m");
