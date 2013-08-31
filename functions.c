@@ -1,4 +1,10 @@
 #include "musica.h"
+#include "functions.h"
+#include "recall.h"
+
+char songlist[SONGLIST_LENGTH][INPUT_LENGTH];
+int songlist_counter = 0;
+char play_order = 'd';
 
 int format_dir_for_import(char *name_newdir)
 {

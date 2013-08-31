@@ -12,5 +12,5 @@
 #define SLEEP_TIME 1
 
 char songlist[SONGLIST_LENGTH][INPUT_LENGTH];
-int songlist_counter = 0;
-char play_order = 'd';
+int songlist_counter;
+char play_order;
