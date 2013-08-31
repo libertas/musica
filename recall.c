@@ -183,6 +183,10 @@ int on_play(char setting, int which)
 				on_play_quit();
 				n = 0;
 				break;
+			case 'e':
+				on_play_quit();
+				printf("Bye!\n");
+				exit(0);
 			case 'n':
 				write2fifo("seek 9999");
 				break;
@@ -195,6 +199,7 @@ int on_play(char setting, int which)
 				printf("Playing....\n"
 				       "The following commands are available:\n"
 				       "q:stop\n" "p:pause\n" "n:next\n"
+				       "e:exit\n"
 				       "m:mute\n" "s:show this menu\n");
 				break;
 			}
