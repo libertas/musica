@@ -1,6 +1,6 @@
 CC=cc
 CFLAGS = -O2 -std=c99 -march=native -Wall
-objects = musica.o
+objects = musica.o recall.o functions.o
 destination= /usr/local/bin/musica
 
 musica:$(objects)
