@@ -13,6 +13,8 @@ clean:
 	-rm musica
 indent:
 	indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -o musica.c musica.c
+	indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -o recall.c recall.c
+	indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -o functions.c functions.c
 
 install:musica
 	cp musica $(destination)
