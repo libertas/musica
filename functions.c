@@ -73,8 +73,6 @@ int getdirname_loop(DIR * dirp_root, char *name_root)
 	return 0;
 }
 
-
-
 int write2fifo(char msg[])
 {
 	FILE *fifo;

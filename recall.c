@@ -18,7 +18,7 @@ int on_save_config()
 	return 0;
 }
 
-int (*on_import)(char *name_newdir)=import;
+int (*on_import) (char *name_newdir) = import;
 
 int on_importl(char *name_newdir)
 {
@@ -119,21 +119,22 @@ int on_play_quit()
 int on_play(char setting, int which)
 {
 	//checking if musica_fifofile exists
-	if(mkfifo("/tmp/musica_fifofile",0644)!=0){
-		printf("/tmp/musica_fifo file exists,is there another musica running?(Y/n)");
+	if (mkfifo("/tmp/musica_fifofile", 0644) != 0) {
+		printf
+		    ("/tmp/musica_fifo file exists,is there another musica running?(Y/n)");
 		char ans;
-		scanf(" %[YyNn]",&ans);
-		if(ans=='n' || ans=='N'){
+		scanf(" %[YyNn]", &ans);
+		if (ans == 'n' || ans == 'N') {
 			printf("Then recreate it\n");
 			system("rm /tmp/musica_fifofile");
 			system("mkfifo /tmp/musica_fifofile");
-		}
-		else{
-			printf("musica cannot playing two songs at the same time\n");
+		} else {
+			printf
+			    ("musica cannot playing two songs at the same time\n");
 			return 1;
 		}
 	}
-	
+
 	char command[strlen(MPLAYER) + INPUT_LENGTH * SONGLIST_LENGTH +
 		     strlen(MPLAYER_ENDING)];
 
@@ -216,7 +217,7 @@ int on_play(char setting, int which)
 int on_order()
 {
 	char order_inputed;
-	scanf(" %c",&order_inputed);
+	scanf(" %c", &order_inputed);
 	if (order_inputed == 'r' || order_inputed == 'd')
 		play_order = order_inputed;
 	return 0;
@@ -226,11 +227,12 @@ int on_up()
 {
 	int which;
 	char buffer[INPUT_LENGTH];
-	scanf("%d",&which);
-	if(which<=0 || which>songlist_counter) return 1;
-	strcpy(buffer,songlist[which]);
-	strcpy(songlist[which],songlist[which-1]);
-	strcpy(songlist[which-1],buffer);
+	scanf("%d", &which);
+	if (which <= 0 || which > songlist_counter)
+		return 1;
+	strcpy(buffer, songlist[which]);
+	strcpy(songlist[which], songlist[which - 1]);
+	strcpy(songlist[which - 1], buffer);
 	return 0;
 }
 
@@ -238,10 +240,11 @@ int on_down()
 {
 	int which;
 	char buffer[INPUT_LENGTH];
-	scanf("%d",&which);
-	if(which<0 || which>=songlist_counter-1) return 1;
-	strcpy(buffer,songlist[which]);
-	strcpy(songlist[which],songlist[which+1]);
-	strcpy(songlist[which+1],buffer);
+	scanf("%d", &which);
+	if (which < 0 || which >= songlist_counter - 1)
+		return 1;
+	strcpy(buffer, songlist[which]);
+	strcpy(songlist[which], songlist[which + 1]);
+	strcpy(songlist[which + 1], buffer);
 	return 0;
 }

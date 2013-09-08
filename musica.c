@@ -2,7 +2,6 @@
 #include "functions.h"
 #include "recall.h"
 
-
 int executer(char order[INPUT_LENGTH])
 {
 	char name_newdir[INPUT_LENGTH];
@@ -55,10 +54,10 @@ int executer(char order[INPUT_LENGTH])
 
 	else if (strcmp(order, "save") == 0)
 		on_save_config();
-	
+
 	else if (strcmp(order, "up") == 0)
 		on_up();
-	
+
 	else if (strcmp(order, "down") == 0)
 		on_down();
 
@@ -76,38 +75,38 @@ int executer(char order[INPUT_LENGTH])
 
 int main()
 {
-		//preparing
-		char order[INPUT_LENGTH];
-		int executer_returned;
+	//preparing
+	char order[INPUT_LENGTH];
+	int executer_returned;
 
-		//change directory
-		char *home_path;
-		home_path = getenv("HOME");
-		chdir(home_path);
+	//change directory
+	char *home_path;
+	home_path = getenv("HOME");
+	chdir(home_path);
 
-		//read config
-		FILE *stdin_backup = stdin;
-		if ((stdin = fopen(CONFIG_FILE_PATH, "r")) == 0)
+	//read config
+	FILE *stdin_backup = stdin;
+	if ((stdin = fopen(CONFIG_FILE_PATH, "r")) == 0)
+		stdin = stdin_backup;
+
+	//main loop
+	while (1) {
+		if (stdin == stdin_backup)
+			printf(">");
+		for (int i = 0; i < INPUT_LENGTH; i++)
+			order[i] = 0;
+		scanf("%s", order);
+		executer_returned = executer(order);
+		if (executer_returned && (stdin == stdin_backup))
+			break;
+		else if (executer_returned && (stdin != stdin_backup)) {
+			fclose(stdin);
 			stdin = stdin_backup;
-
-		//main loop
-		while (1) {
-			if (stdin == stdin_backup)
-				printf(">");
-			for (int i = 0; i < INPUT_LENGTH; i++)
-				order[i] = 0;
-			scanf("%s", order);
-			executer_returned = executer(order);
-			if (executer_returned && (stdin == stdin_backup)) 
-				break;
-			 else if (executer_returned && (stdin != stdin_backup)) {
-				fclose(stdin);
-				stdin = stdin_backup;
-				printf("\nWelcome to Musica\n"
-				       "If you don't know how to use it,entry \"help\"\n");
-			}
+			printf("\nWelcome to Musica\n"
+			       "If you don't know how to use it,entry \"help\"\n");
 		}
-	
+	}
+
 	printf("Bye!\n");
 	return 0;
 }
