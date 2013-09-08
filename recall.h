@@ -1,5 +1,8 @@
+#include "functions.h"
 
 int on_save_config();
+
+int (*on_import)(char *name_newdir);
 
 int on_importl(char *name_newdir);
 

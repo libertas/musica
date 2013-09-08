@@ -18,6 +18,8 @@ int on_save_config()
 	return 0;
 }
 
+int (*on_import)(char *name_newdir)=import;
+
 int on_importl(char *name_newdir)
 {
 	DIR *p_newdir;

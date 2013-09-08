@@ -15,7 +15,7 @@ int executer(char order[INPUT_LENGTH])
 
 	else if (strcmp(order, "import") == 0) {
 		scanf(" %[^\n]", name_newdir);
-		import(name_newdir);
+		on_import(name_newdir);
 	}
 
 	else if (strcmp(order, "importl") == 0) {
